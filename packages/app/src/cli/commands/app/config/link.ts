@@ -3,6 +3,7 @@ import {linkedAppContext} from '../../../services/app-context.js'
 import link, {LinkOptions} from '../../../services/app/config/link.js'
 import AppLinkedCommand, {AppLinkedCommandOutput} from '../../../utilities/app-linked-command.js'
 import {globalFlags} from '@shopify/cli-kit/node/cli'
+import {Flags} from '@oclif/core'
 
 export default class ConfigLink extends AppLinkedCommand {
   static summary = 'Fetch your app configuration from the Developer Dashboard.'
@@ -17,6 +18,11 @@ export default class ConfigLink extends AppLinkedCommand {
   static flags = {
     ...globalFlags,
     ...appFlags,
+    'client-id': Flags.string({
+      hidden: false,
+      description: 'The Client ID of your app.',
+      env: 'SHOPIFY_FLAG_CLIENT_ID',
+    }),
   }
 
   public async run(): Promise<AppLinkedCommandOutput> {

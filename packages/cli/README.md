@@ -241,7 +241,7 @@ Fetch your app configuration from the Developer Dashboard.
 
 ```
 USAGE
-  $ shopify app config link [--client-id <value> | -c <value>] [--no-color] [--path <value>] [--reset | ] [--verbose]
+  $ shopify app config link [--client-id <value>] [--no-color] [--path <value>] [--reset | -c <value>] [--verbose]
 
 FLAGS
   -c, --config=<value>     [env: SHOPIFY_FLAG_APP_CONFIG] The name of the app configuration.
