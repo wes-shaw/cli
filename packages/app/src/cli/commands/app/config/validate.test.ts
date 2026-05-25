@@ -72,6 +72,26 @@ describe('app config validate command', () => {
     await expectValidationMetadataCalls({cmd_app_validate_json: true})
   })
 
+  test('accepts --client-id with --config to validate a specific linked app configuration', async () => {
+    const app = testAppLinked()
+    mockHealthyProject()
+    vi.mocked(linkedAppContext).mockResolvedValue({app} as Awaited<ReturnType<typeof linkedAppContext>>)
+    vi.mocked(validateApp).mockResolvedValue()
+
+    await Validate.run(['--client-id', 'api-key', '--config', 'staging'], import.meta.url)
+
+    expect(selectActiveConfig).toHaveBeenCalledWith(expect.anything(), 'staging')
+    expect(linkedAppContext).toHaveBeenCalledWith({
+      directory: expect.any(String),
+      clientId: 'api-key',
+      forceRelink: false,
+      userProvidedConfigName: 'staging',
+      unsafeTolerateErrors: true,
+    })
+    expect(validateApp).toHaveBeenCalledWith(app, {json: false})
+    await expectValidationMetadataCalls({cmd_app_validate_json: false})
+  })
+
   test('outputs JSON issues when active config has TOML parse errors', async () => {
     vi.mocked(Project.load).mockResolvedValue({errors: []} as unknown as Project)
     vi.mocked(selectActiveConfig).mockResolvedValue({file: new TomlFile('shopify.app.toml', {})} as any)

@@ -10,6 +10,7 @@ import {globalFlags, jsonFlag} from '@shopify/cli-kit/node/cli'
 import {AbortError, AbortSilentError} from '@shopify/cli-kit/node/error'
 import {outputResult, stringifyMessage, unstyled} from '@shopify/cli-kit/node/output'
 import {renderError} from '@shopify/cli-kit/node/ui'
+import {Flags} from '@oclif/core'
 
 async function recordValidationFailure(issueCount: number, fileCount: number) {
   await metadata.addPublicMetadata(() => ({
@@ -29,6 +30,11 @@ export default class Validate extends AppLinkedCommand {
   static flags = {
     ...globalFlags,
     ...appFlags,
+    'client-id': Flags.string({
+      hidden: false,
+      description: 'The Client ID of your app.',
+      env: 'SHOPIFY_FLAG_CLIENT_ID',
+    }),
     ...jsonFlag,
   }
 

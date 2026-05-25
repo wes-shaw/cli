@@ -317,7 +317,7 @@ Validate your app configuration and extensions.
 
 ```
 USAGE
-  $ shopify app config validate [--client-id <value> | -c <value>] [-j] [--no-color] [--path <value>] [--reset | ]
+  $ shopify app config validate [--client-id <value>] [-j] [--no-color] [--path <value>] [--reset | -c <value>]
     [--verbose]
 
 FLAGS
