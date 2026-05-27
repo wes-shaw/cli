@@ -188,6 +188,26 @@ describe('fetchThemes', () => {
     expect(themes[0]!.processing).toBeFalsy()
     expect(themes[1]!.processing).toBeTruthy()
   })
+
+  test('throws a friendly error when the token is missing the required themes access scope', async () => {
+    // Given
+    const errorResponse = {
+      status: 200,
+      errors: [
+        {
+          message: 'Access denied for themes field. Required access: `read_themes` access scope.',
+          extensions: {code: 'ACCESS_DENIED', requiredAccess: '`read_themes` access scope.'},
+          path: ['themes'],
+        } as any,
+      ],
+    }
+    vi.mocked(adminRequestDoc).mockRejectedValue(new ClientError(errorResponse, {query: ''}))
+
+    // When/Then
+    await expect(fetchThemes(session)).rejects.toThrow(
+      'The authenticated account or access token is missing `read_themes` access scope.',
+    )
+  })
 })
 
 describe('fetchChecksums', () => {

@@ -30,6 +30,7 @@ import {AdminSession} from '../session.js'
 import {AbortError} from '../error.js'
 import {outputDebug} from '../output.js'
 import {recordTiming, recordEvent, recordError} from '../analytics.js'
+import {ClientError} from 'graphql-request'
 
 export type ThemeParams = Partial<Pick<Theme, 'name' | 'role' | 'processing' | 'src'>>
 export type AssetParams = Pick<ThemeAsset, 'key'> & Partial<Pick<ThemeAsset, 'value' | 'attachment'>>
@@ -90,7 +91,11 @@ export async function fetchThemes(session: AdminSession): Promise<Theme[]> {
       variables: {after},
       responseOptions: {handleErrors: false},
       preferredBehaviour: THEME_API_NETWORK_BEHAVIOUR,
+    }).catch((error: unknown) => {
+      abortIfMissingThemeAccessScope(error)
+      throw error
     })
+
     if (!response.themes) {
       unexpectedGraphQLError('Failed to fetch themes')
     }
@@ -604,6 +609,37 @@ export async function passwordProtected(session: AdminSession): Promise<boolean>
 
 function unexpectedGraphQLError(message: string): never {
   throw recordError(new AbortError(message))
+}
+
+function abortIfMissingThemeAccessScope(error: unknown): void {
+  if (!(error instanceof ClientError)) return
+
+  const requiredAccess = getRequiredAccessForAccessDeniedError(error)
+  if (!requiredAccess) return
+
+  const tryMessage = [
+    'If you authenticated with a custom app Admin API access token, open the custom app in your Shopify admin,',
+    'add the required theme access scopes, reinstall the app, and use the new access token.',
+    'For theme pull, theme list, and theme info, add `read_themes`.',
+    'For theme push and theme dev, add both `read_themes` and `write_themes`.',
+    'If you authenticated with your Shopify account, make sure your staff or collaborator account can access Online Store themes, then run `shopify auth logout` and try again.',
+    'See https://shopify.dev/api/usage/access-scopes.',
+  ].join(' ')
+
+  throw recordError(
+    new AbortError(`The authenticated account or access token is missing ${requiredAccess}.`, tryMessage),
+  )
+}
+
+function getRequiredAccessForAccessDeniedError(error: ClientError): string | undefined {
+  const graphQLErrors = error.response.errors
+  if (!Array.isArray(graphQLErrors)) return undefined
+
+  const accessDeniedError = graphQLErrors.find((graphQLError) => graphQLError.extensions?.code === 'ACCESS_DENIED')
+  const requiredAccess = accessDeniedError?.extensions?.requiredAccess
+  if (typeof requiredAccess !== 'string') return undefined
+
+  return requiredAccess.replace(/\.$/, '')
 }
 
 function themeGid(id: number): string {
