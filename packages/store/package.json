@@ -40,7 +40,8 @@
   },
   "dependencies": {
     "@oclif/core": "4.5.3",
-    "@shopify/cli-kit": "4.1.0"
+    "@shopify/cli-kit": "4.1.0",
+    "@shopify/organizations": "4.1.0"
   },
   "devDependencies": {
     "@vitest/coverage-istanbul": "^3.1.4"

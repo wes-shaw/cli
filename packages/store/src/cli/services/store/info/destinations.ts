@@ -2,6 +2,7 @@ import {extractHost, extractMyshopifyHandle} from './host.js'
 import {AbortError} from '@shopify/cli-kit/node/error'
 import {businessPlatformRequest} from '@shopify/cli-kit/node/api/business-platform'
 import {ensureAuthenticatedBusinessPlatform} from '@shopify/cli-kit/node/session'
+import {decodeOrganizationGid} from '@shopify/organizations'
 import type {DestinationNode, DestinationsContext, OwningOrgInternal, StoreInfoFieldError} from './types.js'
 
 const DESTINATIONS_QUERY = `
@@ -100,9 +101,10 @@ export async function fetchDestinationsContext(options: FetchDestinationsContext
     )
     const org = orgResponse.currentUserAccount?.organizationForDestination
     if (org) {
+      const decodedId = org.id ? decodeOrganizationGid(org.id) : undefined
       owningOrg = {
         name: org.name,
-        ...(org.id ? {id: decodeOrganizationGid(org.id)} : {}),
+        ...(decodedId ? {id: decodedId} : {}),
       }
     } else {
       owningOrgError = {
@@ -130,14 +132,6 @@ function matchesStore(node: DestinationNode, lowerStore: string): boolean {
   // extract the hostname and compare. handle/shortName are unreliable (often null or an
   // abbreviation rather than the myshopify subdomain).
   return [node.primaryDomain, node.webUrl].some((value) => extractHost(value) === lowerStore)
-}
-
-function decodeOrganizationGid(gid: string): string | undefined {
-  // Org ids come back as base64-encoded GraphQL global ids: "gid://organization/Organization/123".
-  // We want the bare numeric id; if the shape doesn't match, fall back to the raw value.
-  const decoded = Buffer.from(gid, 'base64').toString('ascii')
-  const match = decoded.match(/\/(\d+)$/)
-  return match ? match[1] : gid
 }
 
 function errorMessage(error: unknown): string {
