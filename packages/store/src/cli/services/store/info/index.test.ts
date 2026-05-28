@@ -53,7 +53,7 @@ describe('getStoreInfo', () => {
   })
 
   test('throws AbortError when no store is provided', async () => {
-    const err = await getStoreInfo({full: false}).catch((e: unknown) => e)
+    const err = await getStoreInfo({}).catch((e: unknown) => e)
     expect(err).toBeInstanceOf(AbortError)
     expect((err as AbortError).message).toContain('No store')
   })
@@ -65,7 +65,7 @@ describe('getStoreInfo', () => {
     })
     vi.mocked(fetchOrganizationShop).mockResolvedValueOnce(orgShop())
 
-    const result = await getStoreInfo({store: SHOP, full: false})
+    const result = await getStoreInfo({store: SHOP})
 
     expect(result.shop_domain).toBe(SHOP)
     expect(result.display_name).toBe('My Shop (Org)')
@@ -89,7 +89,7 @@ describe('getStoreInfo', () => {
     })
     vi.mocked(fetchOrganizationShop).mockRejectedValueOnce(new Error('5xx'))
 
-    const result = await getStoreInfo({store: SHOP, full: false})
+    const result = await getStoreInfo({store: SHOP})
 
     expect(result.plan).toBeUndefined()
     expect(result.billing_currency).toBeUndefined()
@@ -104,28 +104,31 @@ describe('getStoreInfo', () => {
       owningOrgError: {source: 'bp_destinations', reason: 'no match'},
     })
 
-    const result = await getStoreInfo({store: SHOP, full: false})
+    const result = await getStoreInfo({store: SHOP})
 
     expect(fetchOrganizationShop).not.toHaveBeenCalled()
     expect(result._field_errors?.owning_org?.reason).toBe('no match')
     expect(result._field_errors?.plan?.reason).toBe('no match')
   })
 
-  test('with --full and not authed, records cli-source errors for Tier 3 fields', async () => {
+  test('when not authed, silently omits Admin-sourced fields and does not record field errors', async () => {
     vi.mocked(fetchDestinationsContext).mockResolvedValueOnce({
       destination: destination(),
       owningOrg: {name: 'Acme', id: '42'},
     })
     vi.mocked(fetchOrganizationShop).mockResolvedValueOnce(orgShop())
 
-    const result = await getStoreInfo({store: SHOP, full: true})
+    const result = await getStoreInfo({store: SHOP})
 
+    expect(fetchAdminShop).not.toHaveBeenCalled()
     expect(result.shop_owner).toBeUndefined()
-    expect(result._field_errors?.shop_owner?.source).toBe('cli')
-    expect(result._field_errors?.shop_owner?.reason).toContain('store auth')
+    expect(result.timezone).toBeUndefined()
+    expect(result.setup_required).toBeUndefined()
+    expect(result.plus).toBeUndefined()
+    expect(result._field_errors).toBeUndefined()
   })
 
-  test('with --full and authed, includes Tier 3 fields from admin response', async () => {
+  test('when authed, includes Admin-sourced fields from the admin response', async () => {
     vi.mocked(readAuthStatus).mockReturnValue({
       authed: true,
       source: 'store-auth',
@@ -146,7 +149,7 @@ describe('getStoreInfo', () => {
       },
     })
 
-    const result = await getStoreInfo({store: SHOP, full: true})
+    const result = await getStoreInfo({store: SHOP})
 
     expect(result.shop_owner).toEqual({name: 'Alice'})
     expect(result.timezone).toBe('America/New_York')
@@ -155,7 +158,7 @@ describe('getStoreInfo', () => {
     expect(result._field_errors).toBeUndefined()
   })
 
-  test('with --full authed and admin skipped, records admin-source field errors', async () => {
+  test('when authed and admin skipped, records admin-source field errors', async () => {
     vi.mocked(readAuthStatus).mockReturnValue({authed: true, source: 'store-auth'})
     vi.mocked(fetchDestinationsContext).mockResolvedValueOnce({
       destination: destination(),
@@ -164,7 +167,7 @@ describe('getStoreInfo', () => {
     vi.mocked(fetchOrganizationShop).mockResolvedValueOnce(orgShop())
     vi.mocked(fetchAdminShop).mockResolvedValueOnce({skipped: true, reason: 'Admin 5xx'})
 
-    const result = await getStoreInfo({store: SHOP, full: true})
+    const result = await getStoreInfo({store: SHOP})
 
     expect(result._field_errors?.shop_owner?.source).toBe('admin')
     expect(result._field_errors?.shop_owner?.reason).toBe('Admin 5xx')
@@ -177,7 +180,7 @@ describe('getStoreInfo', () => {
       owningOrgError: {source: 'bp_destinations', reason: 'no match'},
     })
 
-    const result = await getStoreInfo({store: SHOP, full: false})
+    const result = await getStoreInfo({store: SHOP})
 
     expect(result.display_name).toBe('My Shop')
     expect(result.store_type).toBe('DEVELOPMENT')
@@ -192,7 +195,7 @@ describe('getStoreInfo', () => {
     })
     vi.mocked(fetchOrganizationShop).mockResolvedValueOnce(orgShop())
 
-    const result = await getStoreInfo({store: SHOP, full: false})
+    const result = await getStoreInfo({store: SHOP})
 
     expect(result.admin_url).toBe('https://admin.shopify.com/store/fallback-handle')
   })

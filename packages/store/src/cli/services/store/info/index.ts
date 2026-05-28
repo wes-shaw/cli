@@ -16,7 +16,6 @@ import {compact} from '@shopify/cli-kit/common/object'
 
 export interface GetStoreInfoOptions {
   store?: string
-  full: boolean
 }
 
 const TIER_3_FIELDS = ['shop_owner', 'timezone', 'setup_required', 'plus'] as const
@@ -38,7 +37,7 @@ export async function getStoreInfo(options: GetStoreInfoOptions): Promise<StoreI
 
   const [orgShopOutcome, adminOutcome] = await Promise.all([
     safeFetchOrganizationShop(destinationsCtx, store, fieldErrors),
-    options.full && auth.authed ? fetchAdminShop(store) : Promise.resolve<AdminShopFetchOutcome | null>(null),
+    auth.authed ? fetchAdminShop(store) : Promise.resolve<AdminShopFetchOutcome | null>(null),
   ])
 
   const result = buildResult({
@@ -46,7 +45,6 @@ export async function getStoreInfo(options: GetStoreInfoOptions): Promise<StoreI
     destinationsCtx,
     orgShop: orgShopOutcome,
     admin: adminOutcome,
-    full: options.full,
     auth,
     fieldErrors,
   })
@@ -87,13 +85,12 @@ interface BuildResultArgs {
   destinationsCtx: DestinationsContext
   orgShop: OrganizationShopFields | undefined
   admin: AdminShopFetchOutcome | null
-  full: boolean
   auth: StoreInfoAuthStatus
   fieldErrors: Record<string, StoreInfoFieldError>
 }
 
 function buildResult(args: BuildResultArgs): StoreInfoResult {
-  const {store, destinationsCtx, orgShop, admin, full, auth, fieldErrors} = args
+  const {store, destinationsCtx, orgShop, admin, auth, fieldErrors} = args
   const destination = destinationsCtx.destination
 
   if (destinationsCtx.owningOrgError) {
@@ -116,9 +113,7 @@ function buildResult(args: BuildResultArgs): StoreInfoResult {
 
   const result = {...compact(baseFields), auth_status: auth} as StoreInfoResult
 
-  if (full) {
-    applyFullFields(result, admin, auth.authed, store, fieldErrors)
-  }
+  applyAdminFields(result, admin, fieldErrors)
 
   if (Object.keys(fieldErrors).length > 0) {
     result._field_errors = fieldErrors
@@ -127,25 +122,21 @@ function buildResult(args: BuildResultArgs): StoreInfoResult {
   return result
 }
 
-function applyFullFields(
+function applyAdminFields(
   result: StoreInfoResult,
   admin: AdminShopFetchOutcome | null,
-  authed: boolean,
-  store: string,
   fieldErrors: Record<string, StoreInfoFieldError>,
 ): void {
-  if (!authed) {
-    const reason = `These fields require \`store auth\`. Run \`shopify store auth --store ${store}\` first.`
-    for (const field of TIER_3_FIELDS) {
-      fieldErrors[field] = {source: 'cli', reason}
-    }
-    return
-  }
+  // Not authed: silently omit Admin-sourced fields. `auth_status: not authenticated`
+  // already tells the caller why; we don't want to clutter the output with field errors
+  // for data the user never asked for.
+  if (!admin) return
 
-  if (!admin || admin.skipped) {
-    const reason = admin?.reason ?? 'Admin API was not queried.'
+  if (admin.skipped) {
+    // Authed (we attempted the fetch) but Admin returned an error. This is a real failure
+    // the caller should know about.
     for (const field of TIER_3_FIELDS) {
-      fieldErrors[field] = {source: 'admin', reason}
+      fieldErrors[field] = {source: 'admin', reason: admin.reason}
     }
     return
   }

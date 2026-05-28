@@ -5,12 +5,6 @@
  */
 export interface storeinfo {
   /**
-   * Include extra fields that require `store auth` (shop owner, timezone, setup status, Plus subscription).
-   * @environment SHOPIFY_FLAG_FULL
-   */
-  '--full'?: ''
-
-  /**
    * Output the result as JSON. Automatically disables color output.
    * @environment SHOPIFY_FLAG_JSON
    */
