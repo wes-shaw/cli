@@ -1,0 +1,184 @@
+import {readAuthStatus} from './auth-status.js'
+import {fetchDestinationsContext} from './destinations.js'
+import {fetchOrganizationShop} from './organization-shop.js'
+import {fetchAdminShop} from './admin-shop.js'
+import type {
+  AdminShopFetchOutcome,
+  DestinationsContext,
+  OrganizationShopFields,
+  StoreInfoAuthStatus,
+  StoreInfoFieldError,
+  StoreInfoPlan,
+  StoreInfoResult,
+} from './types.js'
+import {AbortError, FatalError} from '@shopify/cli-kit/node/error'
+
+export interface GetStoreInfoOptions {
+  store?: string
+  verbose: boolean
+}
+
+const TIER_3_FIELDS = ['shop_owner', 'timezone', 'features', 'setup_required'] as const
+
+export async function getStoreInfo(options: GetStoreInfoOptions): Promise<StoreInfoResult> {
+  const store = options.store
+  if (!store) {
+    throw new AbortError(
+      'No store specified.',
+      'Pass the `myshopify.com` domain of the store as the first argument, e.g. `shopify store info shop.myshopify.com`.',
+    )
+  }
+
+  const fieldErrors: Record<string, StoreInfoFieldError> = {}
+
+  const destinationsCtx = await fetchDestinationsContext({store})
+
+  const auth = readAuthStatus(store)
+
+  const [orgShopOutcome, adminOutcome] = await Promise.all([
+    safeFetchOrganizationShop(destinationsCtx, store, fieldErrors),
+    options.verbose && auth.authed ? fetchAdminShop(store) : Promise.resolve<AdminShopFetchOutcome | null>(null),
+  ])
+
+  const result = buildResult({
+    store,
+    destinationsCtx,
+    orgShop: orgShopOutcome,
+    admin: adminOutcome,
+    verbose: options.verbose,
+    auth,
+    fieldErrors,
+  })
+
+  return result
+}
+
+async function safeFetchOrganizationShop(
+  ctx: DestinationsContext,
+  store: string,
+  fieldErrors: Record<string, StoreInfoFieldError>,
+): Promise<OrganizationShopFields | undefined> {
+  if (!ctx.owningOrg?.id) {
+    // Without an org id we can't address the BP Organizations API. Surface the reason on
+    // every Tier-2 field that depends on it so the caller sees why each is missing.
+    const reason = ctx.owningOrgError?.reason ?? 'Owning organization id is unknown.'
+    for (const field of ['plan', 'shopify_shop_id', 'billing_currency', 'created_at', 'is_main_shop']) {
+      fieldErrors[field] = {source: 'bp_organizations', reason}
+    }
+    return undefined
+  }
+  try {
+    return await fetchOrganizationShop({store, organizationId: ctx.owningOrg.id})
+    // eslint-disable-next-line no-catch-all/no-catch-all
+  } catch (error) {
+    const reason = `Request failed: ${buildErrorReason(error)}`
+    for (const field of ['plan', 'shopify_shop_id', 'billing_currency', 'created_at', 'is_main_shop']) {
+      fieldErrors[field] = {source: 'bp_organizations', reason}
+    }
+    return undefined
+  }
+}
+
+interface BuildResultArgs {
+  store: string
+  destinationsCtx: DestinationsContext
+  orgShop: OrganizationShopFields | undefined
+  admin: AdminShopFetchOutcome | null
+  verbose: boolean
+  auth: StoreInfoAuthStatus
+  fieldErrors: Record<string, StoreInfoFieldError>
+}
+
+function buildResult(args: BuildResultArgs): StoreInfoResult {
+  const {store, destinationsCtx, orgShop, admin, verbose, auth, fieldErrors} = args
+  const destination = destinationsCtx.destination
+
+  if (destinationsCtx.owningOrgError) {
+    fieldErrors.owning_org = destinationsCtx.owningOrgError
+  }
+
+  const result: StoreInfoResult = {
+    shop_domain: store,
+    display_name: orgShop?.name ?? destination.name,
+    shop_id: destination.id,
+    store_type: orgShop?.storeType ?? (destination.isAppDevelopment ? 'DEVELOPMENT' : undefined),
+    status: orgShop?.status ?? destination.status,
+    primary_url: orgShop?.url ?? destination.webUrl,
+    admin_url: buildAdminUrl(destination.handle ?? destination.shortName ?? undefined),
+    owning_org: destinationsCtx.owningOrg,
+    auth_status: auth,
+  }
+
+  if (orgShop) {
+    const plan = buildPlan(orgShop)
+    if (plan) result.plan = plan
+    if (orgShop.shopifyShopId) result.shopify_shop_id = orgShop.shopifyShopId
+    if (orgShop.billingCurrency) result.billing_currency = orgShop.billingCurrency
+    if (orgShop.createdAt) result.created_at = orgShop.createdAt
+    if (orgShop.isMainShop != null) result.is_main_shop = orgShop.isMainShop
+  }
+
+  if (destination.lastAccess) result.last_access = destination.lastAccess
+
+  if (verbose) {
+    applyVerboseFields(result, admin, auth.authed, store, fieldErrors)
+  }
+
+  if (Object.keys(fieldErrors).length > 0) {
+    result._field_errors = fieldErrors
+  }
+
+  return result
+}
+
+function applyVerboseFields(
+  result: StoreInfoResult,
+  admin: AdminShopFetchOutcome | null,
+  authed: boolean,
+  store: string,
+  fieldErrors: Record<string, StoreInfoFieldError>,
+): void {
+  if (!authed) {
+    const reason = `Tier 3 fields require \`store auth\`. Run \`shopify store auth --store ${store}\` first.`
+    for (const field of TIER_3_FIELDS) {
+      fieldErrors[field] = {source: 'cli', reason}
+    }
+    return
+  }
+
+  if (!admin || admin.skipped) {
+    const reason = admin?.reason ?? 'Admin API was not queried.'
+    for (const field of TIER_3_FIELDS) {
+      fieldErrors[field] = {source: 'admin', reason}
+    }
+    return
+  }
+
+  const shop = admin.shop
+  if (shop.shopOwnerName) result.shop_owner = {name: shop.shopOwnerName}
+  if (shop.ianaTimezone) result.timezone = shop.ianaTimezone
+  if (shop.features) result.features = shop.features
+  if (shop.setupRequired != null) result.setup_required = shop.setupRequired
+}
+
+function buildAdminUrl(handle: string | undefined): string | undefined {
+  if (!handle) return undefined
+  return `https://admin.shopify.com/store/${encodeURIComponent(handle)}`
+}
+
+function buildPlan(shop: OrganizationShopFields): StoreInfoPlan | undefined {
+  const plan: StoreInfoPlan = {}
+  if (shop.planName) plan.name = shop.planName
+  if (shop.planVariantName) plan.variant = shop.planVariantName
+  if (!plan.name && !plan.variant) return undefined
+  return plan
+}
+
+function buildErrorReason(error: unknown): string {
+  if (error instanceof FatalError && error.tryMessage) {
+    const tryMsg = typeof error.tryMessage === 'string' ? error.tryMessage : String(error.tryMessage)
+    return `${error.message} (${tryMsg})`
+  }
+  if (error instanceof Error) return error.message
+  return String(error)
+}

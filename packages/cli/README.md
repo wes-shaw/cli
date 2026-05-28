@@ -78,6 +78,7 @@
 * [`shopify search [query]`](#shopify-search-query)
 * [`shopify store auth`](#shopify-store-auth)
 * [`shopify store execute`](#shopify-store-execute)
+* [`shopify store info STORE`](#shopify-store-info-store)
 * [`shopify theme check`](#shopify-theme-check)
 * [`shopify theme console`](#shopify-theme-console)
 * [`shopify theme delete`](#shopify-theme-delete)
@@ -2176,6 +2177,41 @@ EXAMPLES
   $ shopify store execute --store shop.myshopify.com --query "mutation { shop { id } }" --allow-mutations
 
   $ shopify store execute --store shop.myshopify.com --query "query { shop { name } }" --json
+```
+
+## `shopify store info STORE`
+
+Surface metadata about a Shopify store.
+
+```
+USAGE
+  $ shopify store info STORE [-j] [--no-color] [--verbose]
+
+ARGUMENTS
+  STORE  The myshopify.com domain of the store to inspect.
+
+FLAGS
+  -j, --json      [env: SHOPIFY_FLAG_JSON] Output the result as JSON. Automatically disables color output.
+      --no-color  [env: SHOPIFY_FLAG_NO_COLOR] Disable color output.
+      --verbose   [env: SHOPIFY_FLAG_VERBOSE] Increase the verbosity of the output.
+
+DESCRIPTION
+  Surface metadata about a Shopify store.
+
+  Reads metadata for a store from the Business Platform Destinations and Organizations APIs.
+
+  Tier 1 and Tier 2 fields work without `store auth`. Tier 3 fields (shop owner, timezone, features, setup required)
+  require `store auth` and are only included when `--verbose` is set.
+
+  Backend failures degrade gracefully: a single failing call populates `_field_errors` rather than aborting the whole
+  command. The command does fail when the destination cannot be resolved.
+
+EXAMPLES
+  $ shopify store info shop.myshopify.com
+
+  $ shopify store info shop.myshopify.com --json
+
+  $ shopify store info shop.myshopify.com --verbose
 ```
 
 ## `shopify theme check`
