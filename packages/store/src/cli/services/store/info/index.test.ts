@@ -33,9 +33,6 @@ function destination(overrides: Partial<DestinationNode> = {}): DestinationNode 
 
 function orgShop(overrides: Record<string, unknown> = {}) {
   return {
-    id: 'gid-shop',
-    externalId: 'ext-1',
-    shopifyShopId: '12345',
     name: 'My Shop (Org)',
     primaryDomain: `https://${SHOP}`,
     storeType: 'PRODUCTION',
@@ -44,7 +41,6 @@ function orgShop(overrides: Record<string, unknown> = {}) {
     planVariantName: 'monthly',
     billingCurrency: 'USD',
     createdAt: '2025-01-01T00:00:00.000Z',
-    isMainShop: true,
     shortName: 'my-shop',
     ...overrides,
   }
@@ -73,16 +69,13 @@ describe('getStoreInfo', () => {
 
     expect(result.shop_domain).toBe(SHOP)
     expect(result.display_name).toBe('My Shop (Org)')
-    expect(result.shop_id).toBe('gid-dest')
     expect(result.store_type).toBe('PRODUCTION')
     expect(result.status).toBe('active')
     expect(result.primary_url).toBe(`https://${SHOP}`)
     expect(result.admin_url).toBe('https://admin.shopify.com/store/my-shop')
-    expect(result.owning_org).toEqual({name: 'Acme', id: '42'})
+    expect(result.owning_org).toEqual({name: 'Acme'})
     expect(result.plan).toEqual({name: 'Basic', variant: 'monthly'})
-    expect(result.shopify_shop_id).toBe('12345')
     expect(result.billing_currency).toBe('USD')
-    expect(result.is_main_shop).toBe(true)
     expect(result.last_access).toBe('2026-05-20T00:00:00.000Z')
     expect(result.auth_status).toEqual({authed: false, source: 'store-auth'})
     expect(result._field_errors).toBeUndefined()
@@ -98,11 +91,11 @@ describe('getStoreInfo', () => {
 
     const result = await getStoreInfo({store: SHOP, verbose: false})
 
-    expect(result.shopify_shop_id).toBeUndefined()
     expect(result.plan).toBeUndefined()
+    expect(result.billing_currency).toBeUndefined()
     expect(result._field_errors?.plan?.source).toBe('bp_organizations')
     expect(result._field_errors?.plan?.reason).toContain('5xx')
-    expect(result._field_errors?.shopify_shop_id).toBeDefined()
+    expect(result._field_errors?.billing_currency).toBeDefined()
   })
 
   test('records _field_errors when owning org id is unknown (skips org-shop)', async () => {

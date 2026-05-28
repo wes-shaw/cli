@@ -57,17 +57,11 @@ function identityItems(result: StoreInfoResult): string[] {
   const items: string[] = []
   items.push(line('shop_domain', result.shop_domain))
   pushIfPresent(items, 'display_name', result.display_name)
-  pushIfPresent(items, 'shop_id', result.shop_id)
   pushIfPresent(items, 'store_type', result.store_type)
   pushIfPresent(items, 'status', result.status)
   pushIfPresent(items, 'primary_url', result.primary_url)
   pushIfPresent(items, 'admin_url', result.admin_url)
-  if (result.owning_org) {
-    const orgLine = result.owning_org.id
-      ? `${result.owning_org.name} (id: ${result.owning_org.id})`
-      : result.owning_org.name
-    items.push(line('owning_org', orgLine))
-  }
+  if (result.owning_org) items.push(line('owning_org', result.owning_org.name))
   items.push(line('auth_status', formatAuthStatus(result.auth_status)))
   return items
 }
@@ -81,11 +75,9 @@ function tier2Items(result: StoreInfoResult): string[] {
       .join(' / ')
     if (planText) items.push(line('plan', planText))
   }
-  pushIfPresent(items, 'shopify_shop_id', result.shopify_shop_id)
   pushIfPresent(items, 'billing_currency', result.billing_currency)
   pushIfPresent(items, 'created_at', result.created_at)
   pushIfPresent(items, 'last_access', result.last_access)
-  if (result.is_main_shop != null) items.push(line('is_main_shop', formatValue(result.is_main_shop)))
   return items
 }
 

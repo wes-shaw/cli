@@ -14,6 +14,14 @@ export interface StoreInfoFeatures {
 
 export interface StoreInfoOwningOrg {
   name: string
+}
+
+/**
+ * Internal-only org reference used to drive the BP Organizations request.
+ * We don't surface the organization id in `store info` output.
+ */
+export interface OwningOrgInternal {
+  name: string
   id?: string
 }
 
@@ -36,7 +44,6 @@ export interface StoreInfoResult {
   // Tier 1
   shop_domain: string
   display_name?: string
-  shop_id?: string
   store_type?: string
   status?: string
   primary_url?: string
@@ -46,11 +53,9 @@ export interface StoreInfoResult {
 
   // Tier 2
   plan?: StoreInfoPlan
-  shopify_shop_id?: string
   billing_currency?: string
   created_at?: string
   last_access?: string
-  is_main_shop?: boolean
 
   // Tier 3 (verbose + authed only)
   shop_owner?: StoreInfoShopOwner
@@ -77,14 +82,11 @@ export interface DestinationNode {
 
 export interface DestinationsContext {
   destination: DestinationNode
-  owningOrg?: StoreInfoOwningOrg
+  owningOrg?: OwningOrgInternal
   owningOrgError?: StoreInfoFieldError
 }
 
 export interface OrganizationShopFields {
-  id?: string
-  externalId?: string
-  shopifyShopId?: string
   name?: string
   primaryDomain?: string
   storeType?: string
@@ -93,7 +95,6 @@ export interface OrganizationShopFields {
   planVariantName?: string
   billingCurrency?: string
   createdAt?: string
-  isMainShop?: boolean
   shortName?: string
 }
 

@@ -63,7 +63,7 @@ async function safeFetchOrganizationShop(
     // Without an org id we can't address the BP Organizations API. Surface the reason on
     // every Tier-2 field that depends on it so the caller sees why each is missing.
     const reason = ctx.owningOrgError?.reason ?? 'Owning organization id is unknown.'
-    for (const field of ['plan', 'shopify_shop_id', 'billing_currency', 'created_at', 'is_main_shop']) {
+    for (const field of TIER_2_ORG_FIELDS) {
       fieldErrors[field] = {source: 'bp_organizations', reason}
     }
     return undefined
@@ -73,12 +73,14 @@ async function safeFetchOrganizationShop(
     // eslint-disable-next-line no-catch-all/no-catch-all
   } catch (error) {
     const reason = `Request failed: ${buildErrorReason(error)}`
-    for (const field of ['plan', 'shopify_shop_id', 'billing_currency', 'created_at', 'is_main_shop']) {
+    for (const field of TIER_2_ORG_FIELDS) {
       fieldErrors[field] = {source: 'bp_organizations', reason}
     }
     return undefined
   }
 }
+
+const TIER_2_ORG_FIELDS = ['plan', 'billing_currency', 'created_at'] as const
 
 interface BuildResultArgs {
   store: string
@@ -101,17 +103,14 @@ function buildResult(args: BuildResultArgs): StoreInfoResult {
   const baseFields: Partial<StoreInfoResult> = {
     shop_domain: store,
     display_name: orgShop?.name ?? destination.name,
-    shop_id: destination.id,
     store_type: orgShop?.storeType ?? (destination.isAppDevelopment ? 'DEVELOPMENT' : undefined),
     status: orgShop?.status ?? destination.status,
     primary_url: orgShop?.primaryDomain ?? destination.primaryDomain ?? undefined,
     admin_url: buildAdminUrl(destination.handle ?? destination.shortName ?? undefined),
-    owning_org: destinationsCtx.owningOrg,
+    owning_org: destinationsCtx.owningOrg ? {name: destinationsCtx.owningOrg.name} : undefined,
     plan: orgShop ? buildPlan(orgShop) : undefined,
-    shopify_shop_id: orgShop?.shopifyShopId,
     billing_currency: orgShop?.billingCurrency,
     created_at: orgShop?.createdAt,
-    is_main_shop: orgShop?.isMainShop,
     last_access: destination.lastAccess ?? undefined,
   }
 

@@ -11,7 +11,6 @@ function baseResult(overrides: Partial<StoreInfoResult> = {}): StoreInfoResult {
   return {
     shop_domain: 'shop.myshopify.com',
     display_name: 'My Shop',
-    shop_id: 'gid-dest',
     auth_status: {authed: false, source: 'store-auth'},
     ...overrides,
   }
@@ -25,7 +24,7 @@ describe('renderStoreInfoResult', () => {
   test('emits JSON via outputResult when format is json', () => {
     renderStoreInfoResult(
       baseResult({
-        shopify_shop_id: '99',
+        billing_currency: 'USD',
         _field_errors: {shop_owner: {source: 'cli', reason: 'not authed'}},
       }),
       'json',
@@ -35,9 +34,8 @@ describe('renderStoreInfoResult', () => {
     expect(JSON.parse(payload)).toEqual({
       shop_domain: 'shop.myshopify.com',
       display_name: 'My Shop',
-      shop_id: 'gid-dest',
       auth_status: {authed: false, source: 'store-auth'},
-      shopify_shop_id: '99',
+      billing_currency: 'USD',
       _field_errors: {shop_owner: {source: 'cli', reason: 'not authed'}},
     })
     expect(renderInfo).not.toHaveBeenCalled()
@@ -50,13 +48,11 @@ describe('renderStoreInfoResult', () => {
         status: 'active',
         primary_url: 'https://shop.myshopify.com',
         admin_url: 'https://admin.shopify.com/store/my-shop',
-        owning_org: {name: 'Acme', id: '42'},
+        owning_org: {name: 'Acme'},
         plan: {name: 'Basic', variant: 'monthly'},
-        shopify_shop_id: '12345',
         billing_currency: 'USD',
         created_at: '2025-01-01T00:00:00.000Z',
         last_access: '2026-05-20T00:00:00.000Z',
-        is_main_shop: true,
         shop_owner: {name: 'Alice'},
         timezone: 'America/New_York',
         features: {storefront: true, shopifyPlus: false},
@@ -69,19 +65,16 @@ describe('renderStoreInfoResult', () => {
     expect(JSON.parse(payload)).toEqual({
       shop_domain: 'shop.myshopify.com',
       display_name: 'My Shop',
-      shop_id: 'gid-dest',
       store_type: 'PRODUCTION',
       status: 'active',
       primary_url: 'https://shop.myshopify.com',
       admin_url: 'https://admin.shopify.com/store/my-shop',
-      owning_org: {name: 'Acme', id: '42'},
+      owning_org: {name: 'Acme'},
       auth_status: {authed: true, source: 'store-auth', expires_at: '2026-12-01T00:00:00.000Z'},
       plan: {name: 'Basic', variant: 'monthly'},
-      shopify_shop_id: '12345',
       billing_currency: 'USD',
       created_at: '2025-01-01T00:00:00.000Z',
       last_access: '2026-05-20T00:00:00.000Z',
-      is_main_shop: true,
       shop_owner: {name: 'Alice'},
       timezone: 'America/New_York',
       features: {storefront: true, shopifyPlus: false},
@@ -99,7 +92,7 @@ describe('renderStoreInfoResult', () => {
 
   test('text format includes Plan & lifecycle when Tier 2 data present', () => {
     renderStoreInfoResult(
-      baseResult({plan: {name: 'Basic'}, shopify_shop_id: '99', billing_currency: 'USD'}),
+      baseResult({plan: {name: 'Basic'}, billing_currency: 'USD'}),
       'text',
     )
     const opts = vi.mocked(renderInfo).mock.calls[0]?.[0] as {customSections: {title: string}[]}

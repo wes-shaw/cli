@@ -2,7 +2,7 @@ import {extractHost, extractMyshopifyHandle} from './host.js'
 import {AbortError} from '@shopify/cli-kit/node/error'
 import {businessPlatformRequest} from '@shopify/cli-kit/node/api/business-platform'
 import {ensureAuthenticatedBusinessPlatform} from '@shopify/cli-kit/node/session'
-import type {DestinationNode, DestinationsContext, StoreInfoFieldError, StoreInfoOwningOrg} from './types.js'
+import type {DestinationNode, DestinationsContext, OwningOrgInternal, StoreInfoFieldError} from './types.js'
 
 const DESTINATIONS_QUERY = `
   query StoreInfoDestinations($search: String!) {
@@ -89,7 +89,7 @@ export async function fetchDestinationsContext(options: FetchDestinationsContext
     handle: canonicalHandle ?? matchedNode.handle,
   }
 
-  let owningOrg: StoreInfoOwningOrg | undefined
+  let owningOrg: OwningOrgInternal | undefined
   let owningOrgError: StoreInfoFieldError | undefined
 
   try {

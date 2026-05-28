@@ -12,9 +12,6 @@ const ORGANIZATION_SHOP_QUERY = `
       accessibleShops(first: 5, search: $search) {
         edges {
           node {
-            id
-            externalId
-            shopifyShopId
             name
             primaryDomain
             storeType
@@ -23,7 +20,6 @@ const ORGANIZATION_SHOP_QUERY = `
             planVariantName
             billingCurrency
             createdAt
-            isMainShop
             shortName
           }
         }

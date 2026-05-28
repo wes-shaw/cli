@@ -13,9 +13,6 @@ const ORG_ID = '123'
 
 function shopNode(overrides: Record<string, unknown> = {}) {
   return {
-    id: 'gid://shop/Shop/1',
-    externalId: 'public-1',
-    shopifyShopId: '9999',
     name: 'My Shop',
     primaryDomain: `https://${SHOP}`,
     storeType: 'PRODUCTION',
@@ -24,7 +21,6 @@ function shopNode(overrides: Record<string, unknown> = {}) {
     planVariantName: 'monthly',
     billingCurrency: 'USD',
     createdAt: '2025-01-01T00:00:00.000Z',
-    isMainShop: true,
     shortName: 'my-shop',
     ...overrides,
   }
@@ -46,7 +42,7 @@ describe('fetchOrganizationShop', () => {
     } as OrganizationShopResponse)
 
     const shop = await fetchOrganizationShop({store: SHOP, organizationId: ORG_ID})
-    expect(shop.shopifyShopId).toBe('9999')
+    expect(shop.name).toBe('My Shop')
     expect(shop.primaryDomain).toBe(`https://${SHOP}`)
   })
 
