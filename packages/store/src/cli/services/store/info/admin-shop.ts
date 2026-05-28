@@ -93,7 +93,7 @@ function skipReasonForContextError(error: unknown, store: string): string {
     // to run `store auth` when the message indicates a missing/expired session.
     const message = error.message
     if (/store auth|not authenticated|no stored|reauthenticate/i.test(message)) {
-      return `No \`store auth\` for ${store} — run \`shopify store auth --store ${store}\` to enable Tier 3 fields.`
+      return `No \`store auth\` for ${store} — run \`shopify store auth --store ${store}\` to enable these fields.`
     }
     return message
   }

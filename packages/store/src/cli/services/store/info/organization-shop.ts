@@ -73,7 +73,7 @@ export async function fetchOrganizationShop(
   if (!matched) {
     throw new BugError(
       `Couldn't find shop ${options.store} inside organization ${options.organizationId}.`,
-      'The destination resolved against the business platform, but the organizations API does not list this shop. This usually means the search service is stale; try again in a moment.',
+      'The shop matched a global lookup but is not listed under its parent organization. This usually means the search index is stale; try again in a moment.',
     )
   }
 

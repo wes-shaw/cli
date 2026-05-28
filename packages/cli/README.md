@@ -2194,13 +2194,13 @@ FLAGS
 DESCRIPTION
   Surface metadata about a Shopify store.
 
-  Reads metadata for a store from the Business Platform Destinations and Organizations APIs.
+  Returns metadata about a store you have access to: domain, name, type, status, URLs, plan, billing currency, and more.
 
-  Tier 1 and Tier 2 fields work without `store auth`. Tier 3 fields (shop owner, timezone, features, setup required)
-  require `store auth` and are only included when `--verbose` is set.
+  Pass `--verbose` to include shop owner, timezone, features, and setup status. These extra fields require having run
+  `store auth` for the store first.
 
-  Backend failures degrade gracefully: a single failing call populates `_field_errors` rather than aborting the whole
-  command. The command does fail when the destination cannot be resolved.
+  Use `--json` for machine-readable output. When an individual field can't be fetched, the rest of the output is still
+  returned and the missing fields are listed with a reason.
 
 EXAMPLES
   $ shopify store info --store shop.myshopify.com

@@ -87,7 +87,7 @@ describe('renderStoreInfoResult', () => {
     expect(renderInfo).toHaveBeenCalledOnce()
     const opts = vi.mocked(renderInfo).mock.calls[0]?.[0] as {customSections: {title: string}[]}
     const titles = opts.customSections.map((s) => s.title)
-    expect(titles).toContain('Identity')
+    expect(titles).toContain('Overview')
   })
 
   test('text format includes Plan & lifecycle when Tier 2 data present', () => {

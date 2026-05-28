@@ -135,7 +135,7 @@ function applyVerboseFields(
   fieldErrors: Record<string, StoreInfoFieldError>,
 ): void {
   if (!authed) {
-    const reason = `Tier 3 fields require \`store auth\`. Run \`shopify store auth --store ${store}\` first.`
+    const reason = `These fields require \`store auth\`. Run \`shopify store auth --store ${store}\` first.`
     for (const field of TIER_3_FIELDS) {
       fieldErrors[field] = {source: 'cli', reason}
     }

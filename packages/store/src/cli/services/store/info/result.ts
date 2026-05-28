@@ -23,7 +23,7 @@ function buildTextSections(result: StoreInfoResult): AlertCustomSection[] {
   const sections: AlertCustomSection[] = []
 
   sections.push({
-    title: 'Identity',
+    title: 'Overview',
     body: {list: {items: identityItems(result)}},
   })
 

@@ -77,7 +77,7 @@ export async function fetchDestinationsContext(options: FetchDestinationsContext
   if (!matchedNode) {
     throw new AbortError(
       `Couldn't find a store with domain ${options.store} for the current account.`,
-      'Verify the domain (must be the canonical `myshopify.com` FQDN) and that your business-platform session has access to it. Inactive shops are not searchable in v1 of this command.',
+      'Verify the domain (must be the canonical `myshopify.com` FQDN) and that you are signed in to an account with access to the store. Inactive shops are not searchable.',
     )
   }
 
