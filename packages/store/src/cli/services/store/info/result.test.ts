@@ -82,30 +82,40 @@ describe('renderStoreInfoResult', () => {
     })
   })
 
-  test('text format includes identity section', () => {
+  test('text format includes Store and Access sections by default', () => {
     renderStoreInfoResult(baseResult(), 'text')
     expect(renderInfo).toHaveBeenCalledOnce()
     const opts = vi.mocked(renderInfo).mock.calls[0]?.[0] as {customSections: {title: string}[]}
     const titles = opts.customSections.map((s) => s.title)
-    expect(titles).toContain('Overview')
+    expect(titles).toContain('Store')
+    expect(titles).toContain('Access')
   })
 
-  test('text format includes Plan & lifecycle when Tier 2 data present', () => {
+  test('text format includes Plan section when plan data is present', () => {
     renderStoreInfoResult(
       baseResult({plan: {name: 'Basic'}, billing_currency: 'USD'}),
       'text',
     )
     const opts = vi.mocked(renderInfo).mock.calls[0]?.[0] as {customSections: {title: string}[]}
-    expect(opts.customSections.map((s) => s.title)).toContain('Plan & lifecycle')
+    expect(opts.customSections.map((s) => s.title)).toContain('Plan')
   })
 
-  test('text format includes Admin details when Tier 3 data present', () => {
+  test('text format includes Activity section when activity data is present', () => {
     renderStoreInfoResult(
-      baseResult({shop_owner: {name: 'Alice'}, timezone: 'America/New_York'}),
+      baseResult({created_at: '2025-01-01T00:00:00.000Z', last_access: '2026-05-20T00:00:00.000Z'}),
       'text',
     )
     const opts = vi.mocked(renderInfo).mock.calls[0]?.[0] as {customSections: {title: string}[]}
-    expect(opts.customSections.map((s) => s.title)).toContain('Admin details')
+    expect(opts.customSections.map((s) => s.title)).toContain('Activity')
+  })
+
+  test('timezone is rendered in the Store section', () => {
+    renderStoreInfoResult(baseResult({timezone: 'America/New_York'}), 'text')
+    const opts = vi.mocked(renderInfo).mock.calls[0]?.[0] as {
+      customSections: {title: string; body: {list: {items: string[]}}}[]
+    }
+    const store = opts.customSections.find((s) => s.title === 'Store')
+    expect(store?.body.list.items.some((item) => item.includes('Timezone: America/New_York'))).toBe(true)
   })
 
   test('text format adds Missing or partial fields section when _field_errors is non-empty', () => {

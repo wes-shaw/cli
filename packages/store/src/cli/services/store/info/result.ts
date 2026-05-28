@@ -22,25 +22,13 @@ export function renderStoreInfoResult(result: StoreInfoResult, format: StoreInfo
 function buildTextSections(result: StoreInfoResult): AlertCustomSection[] {
   const sections: AlertCustomSection[] = []
 
-  sections.push({
-    title: 'Overview',
-    body: {list: {items: identityItems(result)}},
-  })
-
-  const tier2 = tier2Items(result)
-  if (tier2.length > 0) {
-    sections.push({
-      title: 'Plan & lifecycle',
-      body: {list: {items: tier2}},
-    })
-  }
-
-  const tier3 = tier3Items(result)
-  if (tier3.length > 0) {
-    sections.push({
-      title: 'Admin details',
-      body: {list: {items: tier3}},
-    })
+  for (const {title, items} of [
+    {title: 'Store', items: storeItems(result)},
+    {title: 'Access', items: accessItems(result)},
+    {title: 'Plan', items: planItems(result)},
+    {title: 'Activity', items: activityItems(result)},
+  ]) {
+    if (items.length > 0) sections.push({title, body: {list: {items}}})
   }
 
   if (result._field_errors && Object.keys(result._field_errors).length > 0) {
@@ -53,20 +41,28 @@ function buildTextSections(result: StoreInfoResult): AlertCustomSection[] {
   return sections
 }
 
-function identityItems(result: StoreInfoResult): string[] {
+function storeItems(result: StoreInfoResult): string[] {
   const items: string[] = []
   items.push(line('shop_domain', result.shop_domain))
   pushIfPresent(items, 'display_name', result.display_name)
   pushIfPresent(items, 'store_type', result.store_type)
   pushIfPresent(items, 'status', result.status)
+  if (result.setup_required != null) items.push(line('setup_required', formatValue(result.setup_required)))
+  if (result.owning_org) items.push(line('owning_org', result.owning_org.name))
+  if (result.shop_owner?.name) items.push(line('shop_owner', result.shop_owner.name))
+  pushIfPresent(items, 'timezone', result.timezone)
+  return items
+}
+
+function accessItems(result: StoreInfoResult): string[] {
+  const items: string[] = []
   pushIfPresent(items, 'primary_url', result.primary_url)
   pushIfPresent(items, 'admin_url', result.admin_url)
-  if (result.owning_org) items.push(line('owning_org', result.owning_org.name))
   items.push(line('auth_status', formatAuthStatus(result.auth_status)))
   return items
 }
 
-function tier2Items(result: StoreInfoResult): string[] {
+function planItems(result: StoreInfoResult): string[] {
   const items: string[] = []
   if (result.plan) {
     const planText = [result.plan.name, result.plan.variant]
@@ -76,17 +72,14 @@ function tier2Items(result: StoreInfoResult): string[] {
     if (planText) items.push(line('plan', planText))
   }
   pushIfPresent(items, 'billing_currency', result.billing_currency)
-  pushIfPresent(items, 'created_at', result.created_at)
-  pushIfPresent(items, 'last_access', result.last_access)
+  if (result.plus != null) items.push(line('plus', formatValue(result.plus)))
   return items
 }
 
-function tier3Items(result: StoreInfoResult): string[] {
+function activityItems(result: StoreInfoResult): string[] {
   const items: string[] = []
-  if (result.shop_owner?.name) items.push(line('shop_owner', result.shop_owner.name))
-  pushIfPresent(items, 'timezone', result.timezone)
-  if (result.setup_required != null) items.push(line('setup_required', formatValue(result.setup_required)))
-  if (result.plus != null) items.push(line('plus', formatValue(result.plus)))
+  pushIfPresent(items, 'created_at', result.created_at)
+  pushIfPresent(items, 'last_access', result.last_access)
   return items
 }
 
