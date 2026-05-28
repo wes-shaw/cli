@@ -1,9 +1,8 @@
 import {getStoreInfo} from '../../services/store/info/index.js'
 import {renderStoreInfoResult} from '../../services/store/info/result.js'
 import StoreCommand from '../../utilities/store-command.js'
+import {storeFlags} from '../../flags.js'
 import {globalFlags, jsonFlag} from '@shopify/cli-kit/node/cli'
-import {normalizeStoreFqdn} from '@shopify/cli-kit/node/context/fqdn'
-import {Flags} from '@oclif/core'
 
 export default class StoreInfo extends StoreCommand {
   static summary = 'Surface metadata about a Shopify store.'
@@ -25,13 +24,7 @@ Backend failures degrade gracefully: a single failing call populates \`_field_er
   static flags = {
     ...globalFlags,
     ...jsonFlag,
-    store: Flags.string({
-      char: 's',
-      description: 'The myshopify.com domain of the store to inspect.',
-      env: 'SHOPIFY_FLAG_STORE',
-      parse: async (input) => normalizeStoreFqdn(input),
-      required: true,
-    }),
+    store: storeFlags.store,
   }
 
   public async run(): Promise<void> {
