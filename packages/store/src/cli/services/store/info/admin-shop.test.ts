@@ -46,12 +46,7 @@ describe('fetchAdminShop', () => {
         shopOwnerName: 'Alice',
         ianaTimezone: 'America/New_York',
         setupRequired: false,
-        features: {
-          storefront: true,
-          shopifyPlus: false,
-          harmonizedSystemCode: true,
-          branding: null,
-        },
+        features: {shopifyPlus: true},
       },
     } as never)
 
@@ -62,16 +57,12 @@ describe('fetchAdminShop', () => {
         shopOwnerName: 'Alice',
         ianaTimezone: 'America/New_York',
         setupRequired: false,
-        features: {
-          storefront: true,
-          shopifyPlus: false,
-          harmonizedSystemCode: true,
-        },
+        shopifyPlus: true,
       })
     }
   })
 
-  test('omits features object entirely when no feature flags are present', async () => {
+  test('omits shopifyPlus when the features object is absent', async () => {
     vi.mocked(prepareAdminStoreGraphQLContext).mockResolvedValueOnce(adminContext() as never)
     vi.mocked(graphqlRequest).mockResolvedValueOnce({
       shop: {

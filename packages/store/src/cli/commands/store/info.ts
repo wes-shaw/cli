@@ -10,7 +10,7 @@ export default class StoreInfo extends StoreCommand {
 
   static descriptionWithMarkdown = `Returns metadata about a store you have access to: domain, name, type, status, URLs, plan, billing currency, and more.
 
-Pass \`--full\` to include shop owner, timezone, features, and setup status. These extra fields require having run \`store auth\` for the store first.
+Pass \`--full\` to include shop owner, timezone, setup status, and Plus subscription. These extra fields require having run \`store auth\` for the store first.
 
 Use \`--json\` for machine-readable output. When an individual field can't be fetched, the rest of the output is still returned and the missing fields are listed with a reason.`
 
@@ -27,7 +27,7 @@ Use \`--json\` for machine-readable output. When an individual field can't be fe
     ...jsonFlag,
     store: storeFlags.store,
     full: Flags.boolean({
-      description: 'Include extra fields that require `store auth` (shop owner, timezone, features, setup status).',
+      description: 'Include extra fields that require `store auth` (shop owner, timezone, setup status, Plus subscription).',
       env: 'SHOPIFY_FLAG_FULL',
       default: false,
     }),

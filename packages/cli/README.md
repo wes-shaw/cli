@@ -2189,7 +2189,7 @@ FLAGS
   -j, --json           [env: SHOPIFY_FLAG_JSON] Output the result as JSON. Automatically disables color output.
   -s, --store=<value>  (required) [env: SHOPIFY_FLAG_STORE] The myshopify.com domain of the store.
       --full           [env: SHOPIFY_FLAG_FULL] Include extra fields that require `store auth` (shop owner, timezone,
-                       features, setup status).
+                       setup status, Plus subscription).
       --no-color       [env: SHOPIFY_FLAG_NO_COLOR] Disable color output.
       --verbose        [env: SHOPIFY_FLAG_VERBOSE] Increase the verbosity of the output.
 
@@ -2198,8 +2198,8 @@ DESCRIPTION
 
   Returns metadata about a store you have access to: domain, name, type, status, URLs, plan, billing currency, and more.
 
-  Pass `--full` to include shop owner, timezone, features, and setup status. These extra fields require having run
-  `store auth` for the store first.
+  Pass `--full` to include shop owner, timezone, setup status, and Plus subscription. These extra fields require having
+  run `store auth` for the store first.
 
   Use `--json` for machine-readable output. When an individual field can't be fetched, the rest of the output is still
   returned and the missing fields are listed with a reason.

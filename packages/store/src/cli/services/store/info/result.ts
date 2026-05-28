@@ -86,11 +86,7 @@ function tier3Items(result: StoreInfoResult): string[] {
   if (result.shop_owner?.name) items.push(line('shop_owner', result.shop_owner.name))
   pushIfPresent(items, 'timezone', result.timezone)
   if (result.setup_required != null) items.push(line('setup_required', formatValue(result.setup_required)))
-  if (result.features) {
-    for (const [key, value] of Object.entries(result.features)) {
-      items.push(`${capitalizeWords(key)}: ${formatValue(value)}`)
-    }
-  }
+  if (result.plus != null) items.push(line('plus', formatValue(result.plus)))
   return items
 }
 

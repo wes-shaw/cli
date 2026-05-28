@@ -5,13 +5,6 @@ export interface StoreInfoFieldError {
   reason: string
 }
 
-export interface StoreInfoFeatures {
-  storefront?: boolean
-  shopifyPlus?: boolean
-  harmonizedSystemCode?: boolean
-  branding?: string
-}
-
 export interface StoreInfoOwningOrg {
   name: string
 }
@@ -60,8 +53,8 @@ export interface StoreInfoResult {
   // --full (+ authed) only
   shop_owner?: StoreInfoShopOwner
   timezone?: string
-  features?: StoreInfoFeatures
   setup_required?: boolean
+  plus?: boolean
 
   _field_errors?: Record<string, StoreInfoFieldError>
 }
@@ -106,5 +99,5 @@ export interface AdminShopFields {
   shopOwnerName?: string
   ianaTimezone?: string
   setupRequired?: boolean
-  features?: StoreInfoFeatures
+  shopifyPlus?: boolean
 }

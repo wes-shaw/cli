@@ -3,7 +3,7 @@ import {adminUrl} from '@shopify/cli-kit/node/api/admin'
 import {graphqlRequest} from '@shopify/cli-kit/node/api/graphql'
 import {AbortError} from '@shopify/cli-kit/node/error'
 import {compact} from '@shopify/cli-kit/common/object'
-import type {AdminShopFetchOutcome, AdminShopFields, StoreInfoFeatures} from './types.js'
+import type {AdminShopFetchOutcome, AdminShopFields} from './types.js'
 
 const ADMIN_SHOP_QUERY = `
   query StoreInfoAdminShop {
@@ -12,10 +12,7 @@ const ADMIN_SHOP_QUERY = `
       ianaTimezone
       setupRequired
       features {
-        storefront
         shopifyPlus
-        harmonizedSystemCode
-        branding
       }
     }
   }
@@ -27,10 +24,7 @@ interface AdminShopResponse {
     ianaTimezone?: string | null
     setupRequired?: boolean | null
     features?: {
-      storefront?: boolean | null
       shopifyPlus?: boolean | null
-      harmonizedSystemCode?: boolean | null
-      branding?: string | null
     } | null
   }
 }
@@ -69,20 +63,11 @@ export async function fetchAdminShop(store: string): Promise<AdminShopFetchOutco
 }
 
 function mapAdminShop(shop: AdminShopResponse['shop']): AdminShopFields {
-  const features = shop.features
-    ? (compact({
-        storefront: shop.features.storefront,
-        shopifyPlus: shop.features.shopifyPlus,
-        harmonizedSystemCode: shop.features.harmonizedSystemCode,
-        branding: shop.features.branding,
-      }) as StoreInfoFeatures)
-    : {}
-
   return compact({
     shopOwnerName: shop.shopOwnerName,
     ianaTimezone: shop.ianaTimezone,
     setupRequired: shop.setupRequired,
-    features: Object.keys(features).length > 0 ? features : undefined,
+    shopifyPlus: shop.features?.shopifyPlus,
   }) as AdminShopFields
 }
 

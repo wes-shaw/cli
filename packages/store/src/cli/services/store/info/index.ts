@@ -19,7 +19,7 @@ export interface GetStoreInfoOptions {
   full: boolean
 }
 
-const TIER_3_FIELDS = ['shop_owner', 'timezone', 'features', 'setup_required'] as const
+const TIER_3_FIELDS = ['shop_owner', 'timezone', 'setup_required', 'plus'] as const
 
 export async function getStoreInfo(options: GetStoreInfoOptions): Promise<StoreInfoResult> {
   const store = options.store
@@ -156,8 +156,8 @@ function applyFullFields(
     compact({
       shop_owner: shop.shopOwnerName ? {name: shop.shopOwnerName} : undefined,
       timezone: shop.ianaTimezone,
-      features: shop.features,
       setup_required: shop.setupRequired,
+      plus: shop.shopifyPlus,
     }),
   )
 }

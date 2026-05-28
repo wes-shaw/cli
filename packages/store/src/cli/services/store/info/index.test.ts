@@ -142,7 +142,7 @@ describe('getStoreInfo', () => {
         shopOwnerName: 'Alice',
         ianaTimezone: 'America/New_York',
         setupRequired: false,
-        features: {storefront: true, shopifyPlus: false},
+        shopifyPlus: true,
       },
     })
 
@@ -151,7 +151,7 @@ describe('getStoreInfo', () => {
     expect(result.shop_owner).toEqual({name: 'Alice'})
     expect(result.timezone).toBe('America/New_York')
     expect(result.setup_required).toBe(false)
-    expect(result.features).toEqual({storefront: true, shopifyPlus: false})
+    expect(result.plus).toBe(true)
     expect(result._field_errors).toBeUndefined()
   })
 

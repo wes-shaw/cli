@@ -5,7 +5,7 @@
  */
 export interface storeinfo {
   /**
-   * Include extra fields that require `store auth` (shop owner, timezone, features, setup status).
+   * Include extra fields that require `store auth` (shop owner, timezone, setup status, Plus subscription).
    * @environment SHOPIFY_FLAG_FULL
    */
   '--full'?: ''

@@ -55,7 +55,7 @@ describe('renderStoreInfoResult', () => {
         last_access: '2026-05-20T00:00:00.000Z',
         shop_owner: {name: 'Alice'},
         timezone: 'America/New_York',
-        features: {storefront: true, shopifyPlus: false},
+        plus: true,
         setup_required: false,
         auth_status: {authed: true, source: 'store-auth', expires_at: '2026-12-01T00:00:00.000Z'},
       }),
@@ -77,7 +77,7 @@ describe('renderStoreInfoResult', () => {
       last_access: '2026-05-20T00:00:00.000Z',
       shop_owner: {name: 'Alice'},
       timezone: 'America/New_York',
-      features: {storefront: true, shopifyPlus: false},
+      plus: true,
       setup_required: false,
     })
   })
