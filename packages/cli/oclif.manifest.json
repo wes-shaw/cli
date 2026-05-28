@@ -5866,19 +5866,14 @@
       "aliases": [
       ],
       "args": {
-        "store": {
-          "description": "The myshopify.com domain of the store to inspect.",
-          "name": "store",
-          "required": true
-        }
       },
       "customPluginName": "@shopify/store",
       "description": "Reads metadata for a store from the Business Platform Destinations and Organizations APIs.\n\nTier 1 and Tier 2 fields work without `store auth`. Tier 3 fields (shop owner, timezone, features, setup required) require `store auth` and are only included when `--verbose` is set.\n\nBackend failures degrade gracefully: a single failing call populates `_field_errors` rather than aborting the whole command. The command does fail when the destination cannot be resolved.",
       "descriptionWithMarkdown": "Reads metadata for a store from the Business Platform Destinations and Organizations APIs.\n\nTier 1 and Tier 2 fields work without `store auth`. Tier 3 fields (shop owner, timezone, features, setup required) require `store auth` and are only included when `--verbose` is set.\n\nBackend failures degrade gracefully: a single failing call populates `_field_errors` rather than aborting the whole command. The command does fail when the destination cannot be resolved.",
       "examples": [
-        "<%= config.bin %> <%= command.id %> shop.myshopify.com",
-        "<%= config.bin %> <%= command.id %> shop.myshopify.com --json",
-        "<%= config.bin %> <%= command.id %> shop.myshopify.com --verbose"
+        "<%= config.bin %> <%= command.id %> --store shop.myshopify.com",
+        "<%= config.bin %> <%= command.id %> --store shop.myshopify.com --json",
+        "<%= config.bin %> <%= command.id %> --store shop.myshopify.com --verbose"
       ],
       "flags": {
         "json": {
@@ -5897,6 +5892,16 @@
           "hidden": false,
           "name": "no-color",
           "type": "boolean"
+        },
+        "store": {
+          "char": "s",
+          "description": "The myshopify.com domain of the store to inspect.",
+          "env": "SHOPIFY_FLAG_STORE",
+          "hasDynamicHelp": false,
+          "multiple": false,
+          "name": "store",
+          "required": true,
+          "type": "option"
         },
         "verbose": {
           "allowNo": false,

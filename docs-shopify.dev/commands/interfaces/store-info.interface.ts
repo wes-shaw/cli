@@ -17,6 +17,12 @@ export interface storeinfo {
   '--no-color'?: ''
 
   /**
+   * The myshopify.com domain of the store to inspect.
+   * @environment SHOPIFY_FLAG_STORE
+   */
+  '-s, --store <value>': string
+
+  /**
    * Increase the verbosity of the output.
    * @environment SHOPIFY_FLAG_VERBOSE
    */

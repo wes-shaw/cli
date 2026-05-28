@@ -26,7 +26,7 @@ export async function getStoreInfo(options: GetStoreInfoOptions): Promise<StoreI
   if (!store) {
     throw new AbortError(
       'No store specified.',
-      'Pass the `myshopify.com` domain of the store as the first argument, e.g. `shopify store info shop.myshopify.com`.',
+      'Pass the `myshopify.com` domain via the `--store` flag, e.g. `shopify store info --store shop.myshopify.com`.',
     )
   }
 

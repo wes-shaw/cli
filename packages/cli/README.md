@@ -78,7 +78,7 @@
 * [`shopify search [query]`](#shopify-search-query)
 * [`shopify store auth`](#shopify-store-auth)
 * [`shopify store execute`](#shopify-store-execute)
-* [`shopify store info STORE`](#shopify-store-info-store)
+* [`shopify store info`](#shopify-store-info)
 * [`shopify theme check`](#shopify-theme-check)
 * [`shopify theme console`](#shopify-theme-console)
 * [`shopify theme delete`](#shopify-theme-delete)
@@ -2179,21 +2179,19 @@ EXAMPLES
   $ shopify store execute --store shop.myshopify.com --query "query { shop { name } }" --json
 ```
 
-## `shopify store info STORE`
+## `shopify store info`
 
 Surface metadata about a Shopify store.
 
 ```
 USAGE
-  $ shopify store info STORE [-j] [--no-color] [--verbose]
-
-ARGUMENTS
-  STORE  The myshopify.com domain of the store to inspect.
+  $ shopify store info -s <value> [-j] [--no-color] [--verbose]
 
 FLAGS
-  -j, --json      [env: SHOPIFY_FLAG_JSON] Output the result as JSON. Automatically disables color output.
-      --no-color  [env: SHOPIFY_FLAG_NO_COLOR] Disable color output.
-      --verbose   [env: SHOPIFY_FLAG_VERBOSE] Increase the verbosity of the output.
+  -j, --json           [env: SHOPIFY_FLAG_JSON] Output the result as JSON. Automatically disables color output.
+  -s, --store=<value>  (required) [env: SHOPIFY_FLAG_STORE] The myshopify.com domain of the store to inspect.
+      --no-color       [env: SHOPIFY_FLAG_NO_COLOR] Disable color output.
+      --verbose        [env: SHOPIFY_FLAG_VERBOSE] Increase the verbosity of the output.
 
 DESCRIPTION
   Surface metadata about a Shopify store.
@@ -2207,11 +2205,11 @@ DESCRIPTION
   command. The command does fail when the destination cannot be resolved.
 
 EXAMPLES
-  $ shopify store info shop.myshopify.com
+  $ shopify store info --store shop.myshopify.com
 
-  $ shopify store info shop.myshopify.com --json
+  $ shopify store info --store shop.myshopify.com --json
 
-  $ shopify store info shop.myshopify.com --verbose
+  $ shopify store info --store shop.myshopify.com --verbose
 ```
 
 ## `shopify theme check`

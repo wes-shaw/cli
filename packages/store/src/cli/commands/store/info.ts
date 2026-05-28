@@ -3,7 +3,7 @@ import {renderStoreInfoResult} from '../../services/store/info/result.js'
 import StoreCommand from '../../utilities/store-command.js'
 import {globalFlags, jsonFlag} from '@shopify/cli-kit/node/cli'
 import {normalizeStoreFqdn} from '@shopify/cli-kit/node/context/fqdn'
-import {Args} from '@oclif/core'
+import {Flags} from '@oclif/core'
 
 export default class StoreInfo extends StoreCommand {
   static summary = 'Surface metadata about a Shopify store.'
@@ -17,29 +17,28 @@ Backend failures degrade gracefully: a single failing call populates \`_field_er
   static description = this.descriptionWithoutMarkdown()
 
   static examples = [
-    '<%= config.bin %> <%= command.id %> shop.myshopify.com',
-    '<%= config.bin %> <%= command.id %> shop.myshopify.com --json',
-    '<%= config.bin %> <%= command.id %> shop.myshopify.com --verbose',
+    '<%= config.bin %> <%= command.id %> --store shop.myshopify.com',
+    '<%= config.bin %> <%= command.id %> --store shop.myshopify.com --json',
+    '<%= config.bin %> <%= command.id %> --store shop.myshopify.com --verbose',
   ]
-
-  static args = {
-    store: Args.string({
-      description: 'The myshopify.com domain of the store to inspect.',
-      required: true,
-      parse: async (input) => normalizeStoreFqdn(input),
-    }),
-  }
 
   static flags = {
     ...globalFlags,
     ...jsonFlag,
+    store: Flags.string({
+      char: 's',
+      description: 'The myshopify.com domain of the store to inspect.',
+      env: 'SHOPIFY_FLAG_STORE',
+      parse: async (input) => normalizeStoreFqdn(input),
+      required: true,
+    }),
   }
 
   public async run(): Promise<void> {
-    const {args, flags} = await this.parse(StoreInfo)
+    const {flags} = await this.parse(StoreInfo)
 
     const result = await getStoreInfo({
-      store: args.store,
+      store: flags.store,
       verbose: Boolean(flags.verbose),
     })
 
