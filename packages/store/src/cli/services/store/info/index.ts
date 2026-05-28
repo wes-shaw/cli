@@ -14,7 +14,7 @@ import type {
 import {AbortError, FatalError} from '@shopify/cli-kit/node/error'
 import {compact} from '@shopify/cli-kit/common/object'
 
-export interface GetStoreInfoOptions {
+interface GetStoreInfoOptions {
   store?: string
 }
 

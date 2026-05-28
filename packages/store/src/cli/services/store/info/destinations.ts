@@ -54,7 +54,7 @@ export interface OrganizationForDestinationResponse {
   } | null
 }
 
-export interface FetchDestinationsContextOptions {
+interface FetchDestinationsContextOptions {
   store: string
   token?: string
 }

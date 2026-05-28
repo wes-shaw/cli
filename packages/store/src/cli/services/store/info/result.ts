@@ -4,7 +4,7 @@ import {renderInfo} from '@shopify/cli-kit/node/ui'
 import {capitalizeWords, formatDate} from '@shopify/cli-kit/common/string'
 import type {AlertCustomSection} from '@shopify/cli-kit/node/ui'
 
-export type StoreInfoOutputFormat = 'text' | 'json'
+type StoreInfoOutputFormat = 'text' | 'json'
 
 const DATE_FIELDS = new Set(['created_at', 'last_access'])
 

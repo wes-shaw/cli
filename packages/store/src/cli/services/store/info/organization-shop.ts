@@ -40,7 +40,7 @@ export interface OrganizationShopResponse {
   } | null
 }
 
-export interface FetchOrganizationShopOptions {
+interface FetchOrganizationShopOptions {
   store: string
   organizationId: string
   token?: string

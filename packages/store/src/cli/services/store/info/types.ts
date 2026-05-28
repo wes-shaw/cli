@@ -1,11 +1,11 @@
-export type StoreInfoFieldErrorSource = 'bp_destinations' | 'bp_organizations' | 'admin' | 'cli'
+type StoreInfoFieldErrorSource = 'bp_destinations' | 'bp_organizations' | 'admin' | 'cli'
 
 export interface StoreInfoFieldError {
   source: StoreInfoFieldErrorSource
   reason: string
 }
 
-export interface StoreInfoOwningOrg {
+interface StoreInfoOwningOrg {
   name: string
 }
 
@@ -18,7 +18,7 @@ export interface OwningOrgInternal {
   id?: string
 }
 
-export interface StoreInfoShopOwner {
+interface StoreInfoShopOwner {
   name?: string
 }
 
@@ -34,7 +34,6 @@ export interface StoreInfoAuthStatus {
 }
 
 export interface StoreInfoResult {
-  // Tier 1
   shop_domain: string
   display_name?: string
   store_type?: string
@@ -44,13 +43,12 @@ export interface StoreInfoResult {
   owning_org?: StoreInfoOwningOrg
   auth_status: StoreInfoAuthStatus
 
-  // Tier 2
   plan?: StoreInfoPlan
   billing_currency?: string
   created_at?: string
   last_access?: string
 
-  // --full (+ authed) only
+  // Sourced from Admin API; only populated when the shop has been authed via `store auth`.
   shop_owner?: StoreInfoShopOwner
   timezone?: string
   setup_required?: boolean
