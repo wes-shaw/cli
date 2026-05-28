@@ -1,7 +1,7 @@
 import type {StoreInfoFieldError, StoreInfoResult} from './types.js'
 import {outputResult} from '@shopify/cli-kit/node/output'
 import {renderInfo} from '@shopify/cli-kit/node/ui'
-import {capitalizeWords, formatLocalDate} from '@shopify/cli-kit/common/string'
+import {capitalizeWords, formatDate} from '@shopify/cli-kit/common/string'
 import type {AlertCustomSection} from '@shopify/cli-kit/node/ui'
 
 export type StoreInfoOutputFormat = 'text' | 'json'
@@ -109,7 +109,7 @@ function line(key: string, value: string): string {
 function formatValue(value: unknown, key?: string): string {
   if (typeof value === 'boolean') return value ? 'Yes' : 'No'
   if (typeof value === 'string') {
-    if (key && DATE_FIELDS.has(key)) return formatLocalDate(value)
+    if (key && DATE_FIELDS.has(key)) return formatUtcDate(value)
     // GraphQL enum values like APP_DEVELOPMENT → "App Development". Skip short all-caps
     // tokens (USD, ID) that are conventionally codes, not enums.
     if (/^[A-Z][A-Z0-9_]*$/.test(value) && (value.includes('_') || value.length > 4)) {
@@ -121,5 +121,9 @@ function formatValue(value: unknown, key?: string): string {
 
 function formatAuthStatus(auth: StoreInfoResult['auth_status']): string {
   if (!auth.authed) return 'not authenticated'
-  return auth.expires_at ? `authenticated (expires ${formatLocalDate(auth.expires_at)})` : 'authenticated'
+  return auth.expires_at ? `authenticated (expires ${formatUtcDate(auth.expires_at)})` : 'authenticated'
+}
+
+function formatUtcDate(value: string): string {
+  return `${formatDate(new Date(value))} UTC`
 }
