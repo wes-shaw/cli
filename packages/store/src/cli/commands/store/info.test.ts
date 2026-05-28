@@ -15,26 +15,16 @@ describe('store info command', () => {
     })
   })
 
-  test('passes store and verbose=false through to the service', async () => {
+  test('passes the store flag through to the service', async () => {
     await StoreInfo.run(['--store', 'shop.myshopify.com'])
 
     expect(getStoreInfo).toHaveBeenCalledWith({
       store: 'shop.myshopify.com',
-      verbose: false,
     })
     expect(renderStoreInfoResult).toHaveBeenCalledWith(
       expect.objectContaining({shop_domain: 'shop.myshopify.com'}),
       'text',
     )
-  })
-
-  test('passes verbose=true when --verbose flag is set', async () => {
-    await StoreInfo.run(['--store', 'shop.myshopify.com', '--verbose'])
-
-    expect(getStoreInfo).toHaveBeenCalledWith({
-      store: 'shop.myshopify.com',
-      verbose: true,
-    })
   })
 
   test('renders json format when --json flag is set', async () => {
@@ -46,6 +36,5 @@ describe('store info command', () => {
   test('defines the expected flags', () => {
     expect(StoreInfo.flags.store).toBeDefined()
     expect(StoreInfo.flags.json).toBeDefined()
-    expect(StoreInfo.flags.verbose).toBeDefined()
   })
 })
