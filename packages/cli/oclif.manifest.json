@@ -5868,14 +5868,21 @@
       "args": {
       },
       "customPluginName": "@shopify/store",
-      "description": "Returns metadata about a store you have access to: domain, name, type, status, URLs, plan, billing currency, and more.\n\nPass `--verbose` to include shop owner, timezone, features, and setup status. These extra fields require having run `store auth` for the store first.\n\nUse `--json` for machine-readable output. When an individual field can't be fetched, the rest of the output is still returned and the missing fields are listed with a reason.",
-      "descriptionWithMarkdown": "Returns metadata about a store you have access to: domain, name, type, status, URLs, plan, billing currency, and more.\n\nPass `--verbose` to include shop owner, timezone, features, and setup status. These extra fields require having run `store auth` for the store first.\n\nUse `--json` for machine-readable output. When an individual field can't be fetched, the rest of the output is still returned and the missing fields are listed with a reason.",
+      "description": "Returns metadata about a store you have access to: domain, name, type, status, URLs, plan, billing currency, and more.\n\nPass `--full` to include shop owner, timezone, features, and setup status. These extra fields require having run `store auth` for the store first.\n\nUse `--json` for machine-readable output. When an individual field can't be fetched, the rest of the output is still returned and the missing fields are listed with a reason.",
+      "descriptionWithMarkdown": "Returns metadata about a store you have access to: domain, name, type, status, URLs, plan, billing currency, and more.\n\nPass `--full` to include shop owner, timezone, features, and setup status. These extra fields require having run `store auth` for the store first.\n\nUse `--json` for machine-readable output. When an individual field can't be fetched, the rest of the output is still returned and the missing fields are listed with a reason.",
       "examples": [
         "<%= config.bin %> <%= command.id %> --store shop.myshopify.com",
         "<%= config.bin %> <%= command.id %> --store shop.myshopify.com --json",
-        "<%= config.bin %> <%= command.id %> --store shop.myshopify.com --verbose"
+        "<%= config.bin %> <%= command.id %> --store shop.myshopify.com --full"
       ],
       "flags": {
+        "full": {
+          "allowNo": false,
+          "description": "Include extra fields that require `store auth` (shop owner, timezone, features, setup status).",
+          "env": "SHOPIFY_FLAG_FULL",
+          "name": "full",
+          "type": "boolean"
+        },
         "json": {
           "allowNo": false,
           "char": "j",

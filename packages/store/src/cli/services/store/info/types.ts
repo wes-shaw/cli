@@ -57,7 +57,7 @@ export interface StoreInfoResult {
   created_at?: string
   last_access?: string
 
-  // Tier 3 (verbose + authed only)
+  // --full (+ authed) only
   shop_owner?: StoreInfoShopOwner
   timezone?: string
   features?: StoreInfoFeatures
