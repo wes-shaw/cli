@@ -12,6 +12,7 @@ import type {
   StoreInfoResult,
 } from './types.js'
 import {AbortError, FatalError} from '@shopify/cli-kit/node/error'
+import {compact} from '@shopify/cli-kit/common/object'
 
 export interface GetStoreInfoOptions {
   store?: string
@@ -97,7 +98,7 @@ function buildResult(args: BuildResultArgs): StoreInfoResult {
     fieldErrors.owning_org = destinationsCtx.owningOrgError
   }
 
-  const result: StoreInfoResult = {
+  const baseFields: Partial<StoreInfoResult> = {
     shop_domain: store,
     display_name: orgShop?.name ?? destination.name,
     shop_id: destination.id,
@@ -106,19 +107,15 @@ function buildResult(args: BuildResultArgs): StoreInfoResult {
     primary_url: orgShop?.url ?? destination.webUrl,
     admin_url: buildAdminUrl(destination.handle ?? destination.shortName ?? undefined),
     owning_org: destinationsCtx.owningOrg,
-    auth_status: auth,
+    plan: orgShop ? buildPlan(orgShop) : undefined,
+    shopify_shop_id: orgShop?.shopifyShopId,
+    billing_currency: orgShop?.billingCurrency,
+    created_at: orgShop?.createdAt,
+    is_main_shop: orgShop?.isMainShop,
+    last_access: destination.lastAccess ?? undefined,
   }
 
-  if (orgShop) {
-    const plan = buildPlan(orgShop)
-    if (plan) result.plan = plan
-    if (orgShop.shopifyShopId) result.shopify_shop_id = orgShop.shopifyShopId
-    if (orgShop.billingCurrency) result.billing_currency = orgShop.billingCurrency
-    if (orgShop.createdAt) result.created_at = orgShop.createdAt
-    if (orgShop.isMainShop != null) result.is_main_shop = orgShop.isMainShop
-  }
-
-  if (destination.lastAccess) result.last_access = destination.lastAccess
+  const result = {...compact(baseFields), auth_status: auth} as StoreInfoResult
 
   if (verbose) {
     applyVerboseFields(result, admin, auth.authed, store, fieldErrors)
@@ -155,10 +152,15 @@ function applyVerboseFields(
   }
 
   const shop = admin.shop
-  if (shop.shopOwnerName) result.shop_owner = {name: shop.shopOwnerName}
-  if (shop.ianaTimezone) result.timezone = shop.ianaTimezone
-  if (shop.features) result.features = shop.features
-  if (shop.setupRequired != null) result.setup_required = shop.setupRequired
+  Object.assign(
+    result,
+    compact({
+      shop_owner: shop.shopOwnerName ? {name: shop.shopOwnerName} : undefined,
+      timezone: shop.ianaTimezone,
+      features: shop.features,
+      setup_required: shop.setupRequired,
+    }),
+  )
 }
 
 function buildAdminUrl(handle: string | undefined): string | undefined {
@@ -167,11 +169,8 @@ function buildAdminUrl(handle: string | undefined): string | undefined {
 }
 
 function buildPlan(shop: OrganizationShopFields): StoreInfoPlan | undefined {
-  const plan: StoreInfoPlan = {}
-  if (shop.planName) plan.name = shop.planName
-  if (shop.planVariantName) plan.variant = shop.planVariantName
-  if (!plan.name && !plan.variant) return undefined
-  return plan
+  const plan = compact({name: shop.planName, variant: shop.planVariantName}) as StoreInfoPlan
+  return Object.keys(plan).length > 0 ? plan : undefined
 }
 
 function buildErrorReason(error: unknown): string {

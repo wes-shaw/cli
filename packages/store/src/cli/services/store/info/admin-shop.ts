@@ -2,6 +2,7 @@ import {prepareAdminStoreGraphQLContext} from '../execute/admin-context.js'
 import {adminUrl} from '@shopify/cli-kit/node/api/admin'
 import {graphqlRequest} from '@shopify/cli-kit/node/api/graphql'
 import {AbortError} from '@shopify/cli-kit/node/error'
+import {compact} from '@shopify/cli-kit/common/object'
 import type {AdminShopFetchOutcome, AdminShopFields, StoreInfoFeatures} from './types.js'
 
 const ADMIN_SHOP_QUERY = `
@@ -68,20 +69,21 @@ export async function fetchAdminShop(store: string): Promise<AdminShopFetchOutco
 }
 
 function mapAdminShop(shop: AdminShopResponse['shop']): AdminShopFields {
-  const features: StoreInfoFeatures = {}
-  if (shop.features) {
-    if (shop.features.storefront != null) features.storefront = shop.features.storefront
-    if (shop.features.shopifyPlus != null) features.shopifyPlus = shop.features.shopifyPlus
-    if (shop.features.harmonizedSystemCode != null) features.harmonizedSystemCode = shop.features.harmonizedSystemCode
-    if (shop.features.branding != null) features.branding = shop.features.branding
-  }
+  const features = shop.features
+    ? (compact({
+        storefront: shop.features.storefront,
+        shopifyPlus: shop.features.shopifyPlus,
+        harmonizedSystemCode: shop.features.harmonizedSystemCode,
+        branding: shop.features.branding,
+      }) as StoreInfoFeatures)
+    : {}
 
-  const result: AdminShopFields = {}
-  if (shop.shopOwnerName) result.shopOwnerName = shop.shopOwnerName
-  if (shop.ianaTimezone) result.ianaTimezone = shop.ianaTimezone
-  if (shop.setupRequired != null) result.setupRequired = shop.setupRequired
-  if (Object.keys(features).length > 0) result.features = features
-  return result
+  return compact({
+    shopOwnerName: shop.shopOwnerName,
+    ianaTimezone: shop.ianaTimezone,
+    setupRequired: shop.setupRequired,
+    features: Object.keys(features).length > 0 ? features : undefined,
+  }) as AdminShopFields
 }
 
 function skipReasonForContextError(error: unknown, store: string): string {
