@@ -17,7 +17,7 @@ function shopNode(overrides: Record<string, unknown> = {}) {
     externalId: 'public-1',
     shopifyShopId: '9999',
     name: 'My Shop',
-    primaryDomain: SHOP,
+    primaryDomain: `https://${SHOP}`,
     storeType: 'PRODUCTION',
     status: 'active',
     planName: 'Basic',
@@ -26,7 +26,6 @@ function shopNode(overrides: Record<string, unknown> = {}) {
     createdAt: '2025-01-01T00:00:00.000Z',
     isMainShop: true,
     shortName: 'my-shop',
-    url: `https://${SHOP}`,
     ...overrides,
   }
 }
@@ -48,7 +47,7 @@ describe('fetchOrganizationShop', () => {
 
     const shop = await fetchOrganizationShop({store: SHOP, organizationId: ORG_ID})
     expect(shop.shopifyShopId).toBe('9999')
-    expect(shop.primaryDomain).toBe(SHOP)
+    expect(shop.primaryDomain).toBe(`https://${SHOP}`)
   })
 
   test('throws BugError when no shop matches the domain', async () => {
@@ -56,7 +55,7 @@ describe('fetchOrganizationShop', () => {
       organization: {
         id: 'gid',
         name: 'Acme',
-        accessibleShops: {edges: [{node: shopNode({primaryDomain: 'other.myshopify.com'})}]},
+        accessibleShops: {edges: [{node: shopNode({primaryDomain: 'https://other.myshopify.com'})}]},
       },
     } as OrganizationShopResponse)
 

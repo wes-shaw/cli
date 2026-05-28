@@ -104,7 +104,7 @@ function buildResult(args: BuildResultArgs): StoreInfoResult {
     shop_id: destination.id,
     store_type: orgShop?.storeType ?? (destination.isAppDevelopment ? 'DEVELOPMENT' : undefined),
     status: orgShop?.status ?? destination.status,
-    primary_url: orgShop?.url ?? destination.webUrl,
+    primary_url: orgShop?.primaryDomain ?? destination.primaryDomain ?? undefined,
     admin_url: buildAdminUrl(destination.handle ?? destination.shortName ?? undefined),
     owning_org: destinationsCtx.owningOrg,
     plan: orgShop ? buildPlan(orgShop) : undefined,

@@ -21,8 +21,8 @@ function destination(overrides: Partial<DestinationNode> = {}): DestinationNode 
     name: 'My Shop',
     handle: 'my-shop',
     shortName: 'my-shop',
-    primaryDomain: SHOP,
-    webUrl: `https://${SHOP}`,
+    primaryDomain: `https://${SHOP}`,
+    webUrl: `https://${SHOP}/admin`,
     status: 'ACTIVE',
     accountStatus: 'ACTIVE',
     isAppDevelopment: false,
@@ -37,7 +37,7 @@ function orgShop(overrides: Record<string, unknown> = {}) {
     externalId: 'ext-1',
     shopifyShopId: '12345',
     name: 'My Shop (Org)',
-    primaryDomain: SHOP,
+    primaryDomain: `https://${SHOP}`,
     storeType: 'PRODUCTION',
     status: 'active',
     planName: 'Basic',
@@ -46,7 +46,6 @@ function orgShop(overrides: Record<string, unknown> = {}) {
     createdAt: '2025-01-01T00:00:00.000Z',
     isMainShop: true,
     shortName: 'my-shop',
-    url: `https://${SHOP}`,
     ...overrides,
   }
 }

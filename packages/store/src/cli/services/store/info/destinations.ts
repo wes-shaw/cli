@@ -1,3 +1,4 @@
+import {extractHost, extractMyshopifyHandle} from './host.js'
 import {AbortError} from '@shopify/cli-kit/node/error'
 import {businessPlatformRequest} from '@shopify/cli-kit/node/api/business-platform'
 import {ensureAuthenticatedBusinessPlatform} from '@shopify/cli-kit/node/session'
@@ -61,18 +62,31 @@ export interface FetchDestinationsContextOptions {
 export async function fetchDestinationsContext(options: FetchDestinationsContextOptions): Promise<DestinationsContext> {
   const token = options.token ?? (await ensureAuthenticatedBusinessPlatform())
 
+  // BP's destinations.search matches against handle/name; using the subdomain widens the hit
+  // rate vs. passing the full FQDN.
+  const lowerStore = options.store.toLowerCase()
+  const subdomain = lowerStore.replace(/\.myshopify\.com$/, '')
+
   const response = await businessPlatformRequest<DestinationsQueryResponse>(DESTINATIONS_QUERY, token, {
-    search: options.store,
+    search: subdomain,
   })
 
   const nodes = response.currentUserAccount?.destinations.nodes ?? []
-  const matched = nodes.find((node) => node.primaryDomain?.toLowerCase() === options.store.toLowerCase())
+  const matchedNode = nodes.find((node) => matchesStore(node, lowerStore))
 
-  if (!matched) {
+  if (!matchedNode) {
     throw new AbortError(
       `Couldn't find a store with domain ${options.store} for the current account.`,
       'Verify the domain (must be the canonical `myshopify.com` FQDN) and that your business-platform session has access to it. Inactive shops are not searchable in v1 of this command.',
     )
+  }
+
+  // BP returns `handle: null` and a non-subdomain `shortName` for many shops; derive the
+  // canonical myshopify handle from the URL fields so admin_url construction works.
+  const canonicalHandle = extractMyshopifyHandle(matchedNode.primaryDomain) ?? extractMyshopifyHandle(matchedNode.webUrl)
+  const matched: DestinationNode = {
+    ...matchedNode,
+    handle: canonicalHandle ?? matchedNode.handle,
   }
 
   let owningOrg: StoreInfoOwningOrg | undefined
@@ -109,6 +123,13 @@ export async function fetchDestinationsContext(options: FetchDestinationsContext
     ...(owningOrg ? {owningOrg} : {}),
     ...(owningOrgError ? {owningOrgError} : {}),
   }
+}
+
+function matchesStore(node: DestinationNode, lowerStore: string): boolean {
+  // BP returns URL strings (sometimes with scheme, sometimes bare) in primaryDomain/webUrl;
+  // extract the hostname and compare. handle/shortName are unreliable (often null or an
+  // abbreviation rather than the myshopify subdomain).
+  return [node.primaryDomain, node.webUrl].some((value) => extractHost(value) === lowerStore)
 }
 
 function decodeOrganizationGid(gid: string): string | undefined {

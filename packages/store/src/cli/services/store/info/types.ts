@@ -9,7 +9,7 @@ export interface StoreInfoFeatures {
   storefront?: boolean
   shopifyPlus?: boolean
   harmonizedSystemCode?: boolean
-  branding?: boolean
+  branding?: string
 }
 
 export interface StoreInfoOwningOrg {
@@ -95,7 +95,6 @@ export interface OrganizationShopFields {
   createdAt?: string
   isMainShop?: boolean
   shortName?: string
-  url?: string
 }
 
 export type AdminShopFetchOutcome =

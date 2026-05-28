@@ -30,7 +30,7 @@ interface AdminShopResponse {
       storefront?: boolean | null
       shopifyPlus?: boolean | null
       harmonizedSystemCode?: boolean | null
-      branding?: boolean | null
+      branding?: string | null
     } | null
   }
 }

@@ -1,3 +1,4 @@
+import {extractHost} from './host.js'
 import {BugError} from '@shopify/cli-kit/node/error'
 import {businessPlatformOrganizationsRequest} from '@shopify/cli-kit/node/api/business-platform'
 import {ensureAuthenticatedBusinessPlatform} from '@shopify/cli-kit/node/session'
@@ -24,7 +25,6 @@ const ORGANIZATION_SHOP_QUERY = `
             createdAt
             isMainShop
             shortName
-            url
           }
         }
       }
@@ -71,7 +71,8 @@ export async function fetchOrganizationShop(
   })
 
   const edges = response.organization?.accessibleShops?.edges ?? []
-  const matched = edges.map((edge) => edge.node).find((node) => node.primaryDomain?.toLowerCase() === options.store.toLowerCase())
+  const lowerStore = options.store.toLowerCase()
+  const matched = edges.map((edge) => edge.node).find((node) => extractHost(node.primaryDomain) === lowerStore)
 
   if (!matched) {
     throw new BugError(
