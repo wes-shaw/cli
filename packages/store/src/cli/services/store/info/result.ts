@@ -1,9 +1,12 @@
 import type {StoreInfoFieldError, StoreInfoResult} from './types.js'
 import {outputResult} from '@shopify/cli-kit/node/output'
 import {renderInfo} from '@shopify/cli-kit/node/ui'
+import {capitalizeWords, formatLocalDate} from '@shopify/cli-kit/common/string'
 import type {AlertCustomSection} from '@shopify/cli-kit/node/ui'
 
 export type StoreInfoOutputFormat = 'text' | 'json'
+
+const DATE_FIELDS = new Set(['created_at', 'last_access'])
 
 export function renderStoreInfoResult(result: StoreInfoResult, format: StoreInfoOutputFormat): void {
   if (format === 'json') {
@@ -52,7 +55,7 @@ function buildTextSections(result: StoreInfoResult): AlertCustomSection[] {
 
 function identityItems(result: StoreInfoResult): string[] {
   const items: string[] = []
-  items.push(`shop_domain: ${result.shop_domain}`)
+  items.push(line('shop_domain', result.shop_domain))
   pushIfPresent(items, 'display_name', result.display_name)
   pushIfPresent(items, 'shop_id', result.shop_id)
   pushIfPresent(items, 'store_type', result.store_type)
@@ -63,49 +66,68 @@ function identityItems(result: StoreInfoResult): string[] {
     const orgLine = result.owning_org.id
       ? `${result.owning_org.name} (id: ${result.owning_org.id})`
       : result.owning_org.name
-    items.push(`owning_org: ${orgLine}`)
+    items.push(line('owning_org', orgLine))
   }
-  items.push(`auth_status: ${formatAuthStatus(result.auth_status)}`)
+  items.push(line('auth_status', formatAuthStatus(result.auth_status)))
   return items
 }
 
 function tier2Items(result: StoreInfoResult): string[] {
   const items: string[] = []
   if (result.plan) {
-    const planText = [result.plan.name, result.plan.variant].filter(Boolean).join(' / ')
-    if (planText) items.push(`plan: ${planText}`)
+    const planText = [result.plan.name, result.plan.variant]
+      .filter((value): value is string => Boolean(value))
+      .map(capitalizeWords)
+      .join(' / ')
+    if (planText) items.push(line('plan', planText))
   }
   pushIfPresent(items, 'shopify_shop_id', result.shopify_shop_id)
   pushIfPresent(items, 'billing_currency', result.billing_currency)
   pushIfPresent(items, 'created_at', result.created_at)
   pushIfPresent(items, 'last_access', result.last_access)
-  if (result.is_main_shop != null) items.push(`is_main_shop: ${String(result.is_main_shop)}`)
+  if (result.is_main_shop != null) items.push(line('is_main_shop', formatValue(result.is_main_shop)))
   return items
 }
 
 function tier3Items(result: StoreInfoResult): string[] {
   const items: string[] = []
-  if (result.shop_owner?.name) items.push(`shop_owner: ${result.shop_owner.name}`)
+  if (result.shop_owner?.name) items.push(line('shop_owner', result.shop_owner.name))
   pushIfPresent(items, 'timezone', result.timezone)
-  if (result.setup_required != null) items.push(`setup_required: ${String(result.setup_required)}`)
-  if (result.features && Object.keys(result.features).length > 0) {
-    const featureText = Object.entries(result.features)
-      .map(([key, value]) => `${key}=${String(value)}`)
-      .join(', ')
-    items.push(`features: ${featureText}`)
+  if (result.setup_required != null) items.push(line('setup_required', formatValue(result.setup_required)))
+  if (result.features) {
+    for (const [key, value] of Object.entries(result.features)) {
+      items.push(`${capitalizeWords(key)}: ${formatValue(value)}`)
+    }
   }
   return items
 }
 
 function fieldErrorItems(errors: Record<string, StoreInfoFieldError>): string[] {
-  return Object.entries(errors).map(([field, err]) => `${field} [${err.source}]: ${err.reason}`)
+  return Object.entries(errors).map(([field, err]) => `${capitalizeWords(field)} [${err.source}]: ${err.reason}`)
 }
 
-function pushIfPresent(items: string[], label: string, value: string | undefined): void {
-  if (value) items.push(`${label}: ${value}`)
+function pushIfPresent(items: string[], key: string, value: string | undefined): void {
+  if (value) items.push(line(key, formatValue(value, key)))
+}
+
+function line(key: string, value: string): string {
+  return `${capitalizeWords(key)}: ${value}`
+}
+
+function formatValue(value: unknown, key?: string): string {
+  if (typeof value === 'boolean') return value ? 'Yes' : 'No'
+  if (typeof value === 'string') {
+    if (key && DATE_FIELDS.has(key)) return formatLocalDate(value)
+    // GraphQL enum values like APP_DEVELOPMENT → "App Development". Skip short all-caps
+    // tokens (USD, ID) that are conventionally codes, not enums.
+    if (/^[A-Z][A-Z0-9_]*$/.test(value) && (value.includes('_') || value.length > 4)) {
+      return capitalizeWords(value)
+    }
+  }
+  return String(value)
 }
 
 function formatAuthStatus(auth: StoreInfoResult['auth_status']): string {
   if (!auth.authed) return 'not authenticated'
-  return auth.expires_at ? `authenticated (expires ${auth.expires_at})` : 'authenticated'
+  return auth.expires_at ? `authenticated (expires ${formatLocalDate(auth.expires_at)})` : 'authenticated'
 }
