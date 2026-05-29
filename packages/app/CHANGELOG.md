@@ -1,5 +1,16 @@
 # @shopify/app
 
+## 4.1.1
+
+### Patch Changes
+
+- 2070cf2: Fix `app dev` always prompting for storefront password
+- Updated dependencies [89535d6]
+  - @shopify/theme@4.1.1
+  - @shopify/organizations@4.1.1
+  - @shopify/cli-kit@4.1.1
+  - @shopify/plugin-cloudflare@4.1.1
+
 ## 4.1.0
 
 ### Minor Changes

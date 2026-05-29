@@ -1,5 +1,12 @@
 # @shopify/theme
 
+## 4.1.1
+
+### Patch Changes
+
+- 89535d6: Fix `theme dev` preview occasionally rendering the live theme by preserving the Shopify `_shopify_essential` cookie in redirects
+  - @shopify/cli-kit@4.1.1
+
 ## 4.1.0
 
 ### Patch Changes
